@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial & Savings Monitoring</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f4f1;
+            color: #1a2e22;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease;
+        }
+        .accordion-content.open {
+            max-height: 1000px;
+            transition: max-height 0.5s ease-in, padding 0.3s ease;
+        }
+        .rotate-icon {
+            transition: transform 0.3s ease;
+        }
+        .open .rotate-icon {
+            transform: rotate(180deg);
+        }
+        .view-section {
+            display: none;
+        }
+        .view-section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-[#f2f7f3] min-h-screen pb-12">
+
+    <!-- VIEW 1: HOME SELECTION SCREEN -->
+    <div id="homeView" class="view-section active max-w-md mx-auto px-4 pt-16">
+        <div class="text-center mb-8">
+            <div class="w-16 h-16 bg-emerald-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg text-2xl font-bold">
+                <i class="fa-solid fa-wallet"></i>
+            </div>
+            <h1 class="text-2xl font-extrabold text-gray-800">Financial Portal</h1>
+            <p class="text-xs text-gray-500 mt-1">Silakan pilih menu pemantauan akun di bawah ini</p>
+        </div>
+
+        <div class="space-y-4">
+            <!-- Button A: Personal Finance -->
+            <button onclick="switchView('personal')" class="w-full bg-white hover:bg-emerald-50 border border-emerald-900/10 p-5 rounded-2xl shadow-sm flex items-center justify-between transition group text-left">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-lg font-bold group-hover:scale-105 transition">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-gray-800">A. Personal Finance</h2>
+                        <p class="text-xs text-gray-500">Dashboard aset, liabilities, dan net worth</p>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-gray-400"></i>
+            </button>
+
+            <!-- Button B: Deposit Mesi -->
+            <button onclick="switchView('mesi')" class="w-full bg-white hover:bg-pink-50 border border-pink-900/10 p-5 rounded-2xl shadow-sm flex items-center justify-between transition group text-left">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-pink-100 text-pink-600 flex items-center justify-center text-lg font-bold group-hover:scale-105 transition">
+                        <i class="fa-solid fa-heart"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-gray-800">B. Deposit Mesi</h2>
+                        <p class="text-xs text-gray-500">Ringkasan saldo & deposito titipan Mesi</p>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-gray-400"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- VIEW 2: PERSONAL FINANCE DASHBOARD -->
+    <div id="personalView" class="view-section">
+        <header class="bg-gradient-to-b from-[#1b5e20] to-[#2e7d32] text-white pt-5 pb-8 px-5 rounded-b-[2.5rem] shadow-lg">
+            <div class="max-w-md mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <button onclick="switchView('home')" class="bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-1 transition">
+                        <i class="fa-solid fa-arrow-left"></i> <span>Home</span>
+                    </button>
+                    <h1 class="text-sm font-bold tracking-wide">Aset & Keuangan</h1>
+                    <button id="toggleMaskBtn" onclick="toggleMask()" class="bg-white/10 hover:bg-white/20 p-2 rounded-full transition">
+                        <i id="eyeIcon" class="fa-solid fa-eye text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- Total Saldo Card -->
+                <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/15">
+                    <div class="text-xs text-green-100 mb-1">
+                        <span>Net Worth Utama (True Net Worth)</span>
+                    </div>
+                    <div id="totalBalanceDisplay" class="text-2xl font-extrabold tracking-tight">
+                        IDR 144,848,824
+                    </div>
+                    <div class="text-[11px] text-emerald-200 mt-1 flex items-center">
+                        <i class="fa-solid fa-circle-check mr-1"></i> Data disinkronkan otomatis
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-md mx-auto px-4 mt-[-1.5rem] space-y-4">
+            <!-- SECTION 1: Asset Under Management -->
+            <div class="bg-white rounded-2xl shadow-sm border border-emerald-900/10 overflow-hidden transition hover:shadow-md">
+                <div onclick="toggleAccordion('aumSection', 'aumIcon')" class="p-4 cursor-pointer flex justify-between items-center bg-white">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xs text-gray-500 font-medium">Asset Under Management</h2>
+                            <p class="text-base font-bold text-gray-800 amount-text" data-val="167418871">IDR 167,418,871</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-semibold">Gross</span>
+                        <i id="aumIcon" class="fa-solid fa-chevron-down text-gray-400 rotate-icon text-sm"></i>
+                    </div>
+                </div>
+                <div id="aumSection" class="accordion-content px-4 bg-gray-50/50 border-t border-gray-100">
+                    <div class="py-3 space-y-3 text-sm">
+                        <div>
+                            <div class="flex justify-between items-center text-xs font-bold text-emerald-800 mb-2 pt-1">
+                                <span>Liquid & Cash Assets (A)</span>
+                                <span class="amount-text" data-val="157158559">IDR 157,158,559</span>
+                            </div>
+                            <div class="space-y-2 pl-2 border-l-2 border-emerald-200 text-xs">
+                                <div class="flex justify-between"><span class="text-gray-600">BCA (0.04%)</span><span class="font-semibold amount-text" data-val="54479">IDR 54,479</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600">Bank Jago (41.06%)</span><span class="font-semibold amount-text" data-val="59967961">IDR 59,967,961</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600">Mandiri (19.25%)</span><span class="font-semibold amount-text" data-val="28115405">IDR 28,115,405</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600">MTR (0.96%)</span><span class="font-semibold amount-text" data-val="1400000">IDR 1,400,000</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600">Superbank (45.88%)</span><span class="font-semibold amount-text" data-val="67020714">IDR 67,020,714</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600">Seabank (0.07%)</span><span class="font-semibold amount-text" data-val="100000">IDR 100,000</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600">Bank Notes (0.34%)</span><span class="font-semibold amount-text" data-val="500000">IDR 500,000</span></div>
+                            </div>
+                        </div>
+                        <div class="pt-2 border-t border-gray-200">
+                            <div class="flex justify-between items-center text-xs font-bold text-emerald-800 mb-2">
+                                <span>Capital Growth Assets (B)</span>
+                                <span class="amount-text" data-val="10260312">IDR 10,260,312</span>
+                            </div>
+                            <div class="space-y-2 pl-2 border-l-2 border-emerald-200 text-xs pb-2">
+                                <div class="flex justify-between"><span class="text-gray-600">StockBit (5.47%)</span><span class="font-semibold amount-text" data-val="7990000">IDR 7,990,000</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600">Pluang (1.55%)</span><span class="font-semibold amount-text" data-val="2270312">IDR 2,270,312</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600">Bank Jago USD</span><span class="font-semibold amount-text" data-val="0">IDR 0</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600">Bank Jago Gold</span><span class="font-semibold amount-text" data-val="0">IDR 0</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: Liabilities -->
+            <div class="bg-white rounded-2xl shadow-sm border border-red-900/10 overflow-hidden transition hover:shadow-md">
+                <div onclick="toggleAccordion('liabSection', 'liabIcon')" class="p-4 cursor-pointer flex justify-between items-center bg-white">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-file-invoice-dollar"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xs text-gray-500 font-medium">Liabilities</h2>
+                            <p class="text-base font-bold text-red-600 amount-text" data-val="22570047">IDR 22,570,047</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs bg-red-100 text-red-800 px-2 py-0.5 rounded-full font-semibold">Total</span>
+                        <i id="liabIcon" class="fa-solid fa-chevron-down text-gray-400 rotate-icon text-sm"></i>
+                    </div>
+                </div>
+                <div id="liabSection" class="accordion-content px-4 bg-gray-50/50 border-t border-gray-100">
+                    <div class="py-3 space-y-3 text-sm">
+                        <div>
+                            <div class="flex justify-between items-center text-xs font-bold text-red-800 mb-2 pt-1">
+                                <span>Third Parties Fund (DPK / E)</span>
+                                <span class="amount-text" data-val="21353819">IDR 21,353,819</span>
+                            </div>
+                            <div class="space-y-2 pl-2 border-l-2 border-red-200 text-xs">
+                                <div class="flex justify-between"><span class="text-gray-600">Mesi</span><span class="font-semibold amount-text" data-val="20064893">IDR 20,064,893</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600">Put On</span><span class="font-semibold amount-text" data-val="1288926">IDR 1,288,926</span></div>
+                            </div>
+                        </div>
+                        <div class="pt-2 border-t border-gray-200 pb-2">
+                            <div class="flex justify-between items-center text-xs font-bold text-red-800 mb-2">
+                                <span>Current Liabilities (F)</span>
+                                <span class="amount-text" data-val="1216228">IDR 1,216,228</span>
+                            </div>
+                            <div class="space-y-2 pl-2 border-l-2 border-red-200 text-xs">
+                                <div class="flex justify-between"><span class="text-gray-600">CC Mandiri</span><span class="font-semibold amount-text" data-val="1016228">IDR 1,016,228</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600">Account Payable</span><span class="font-semibold amount-text" data-val="200000">IDR 200,000</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 3: Net Worth Summary -->
+            <div class="bg-white rounded-2xl shadow-sm border border-amber-900/10 overflow-hidden transition hover:shadow-md">
+                <div onclick="toggleAccordion('netSection', 'netIcon')" class="p-4 cursor-pointer flex justify-between items-center bg-white">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-chart-pie"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xs text-gray-500 font-medium">Net Worth Summary</h2>
+                            <p class="text-base font-bold text-emerald-700 amount-text" data-val="144848824">IDR 144,848,824</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-semibold">Summary</span>
+                        <i id="netIcon" class="fa-solid fa-chevron-down text-gray-400 rotate-icon text-sm"></i>
+                    </div>
+                </div>
+                <div id="netSection" class="accordion-content px-4 bg-gray-50/50 border-t border-gray-100">
+                    <div class="py-3 space-y-2 text-xs pb-3">
+                        <div class="flex justify-between items-center py-1 border-b border-gray-100"><span class="text-gray-600">Total Gross Asset (C)</span><span class="font-bold amount-text" data-val="167418871">IDR 167,418,871</span></div>
+                        <div class="flex justify-between items-center py-1 border-b border-gray-100"><span class="text-gray-600">Account Receivable (D)</span><span class="font-bold amount-text" data-val="10000000">IDR 10,000,000</span></div>
+                        <div class="flex justify-between items-center py-1 border-b border-gray-100"><span class="text-gray-600">Gross Personal Asset (C - E)</span><span class="font-bold amount-text" data-val="146065052">IDR 146,065,052</span></div>
+                        <div class="flex justify-between items-center py-2 bg-amber-50/60 px-2 rounded-lg font-bold text-emerald-800 text-sm mt-1">
+                            <span>Net Worth (True Net Worth)</span>
+                            <span class="amount-text" data-val="144848824">IDR 144,848,824</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 4: Liquidity Reserve -->
+            <div class="bg-white rounded-2xl shadow-sm border border-blue-900/10 overflow-hidden transition hover:shadow-md">
+                <div onclick="toggleAccordion('liqSection', 'liqIcon')" class="p-4 cursor-pointer flex justify-between items-center bg-white">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-credit-card"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xs text-gray-500 font-medium">Liquidity Reserve (CC Mandiri)</h2>
+                            <p class="text-base font-bold text-blue-800">usage (7.26%)</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold">Fasilitas</span>
+                        <i id="liqIcon" class="fa-solid fa-chevron-down text-gray-400 rotate-icon text-sm"></i>
+                    </div>
+                </div>
+                <div id="liqSection" class="accordion-content px-4 bg-gray-50/50 border-t border-gray-100">
+                    <div class="py-3 space-y-2 text-xs pb-3">
+                        <div class="flex justify-between items-center"><span class="text-gray-600">Total Limit</span><span class="font-semibold amount-text" data-val="14000000">IDR 14,000,000</span></div>
+                        <div class="flex justify-between items-center"><span class="text-gray-600">Usage</span><span class="font-semibold amount-text" data-val="1016228">IDR 1,016,228</span></div>
+                        <div class="flex justify-between items-center pt-2 border-t border-gray-200 font-bold text-blue-700">
+                            <span>Available Limit</span>
+                            <span class="amount-text" data-val="12983772">IDR 12,983,772</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- VIEW 3: DEPOSIT MESI -->
+    <div id="mesiView" class="view-section max-w-md mx-auto px-4 pt-6">
+        <div class="flex items-center justify-between mb-6">
+            <button onclick="switchView('home')" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1.5 rounded-full text-xs font-semibold flex items-center space-x-1 transition">
+                <i class="fa-solid fa-arrow-left"></i> <span>Home</span>
+            </button>
+            <h1 class="text-base font-bold text-pink-700">Tabungan Mesi</h1>
+            <div class="w-8"></div>
+        </div>
+
+        <!-- Mesi Card (Optimized for Easy Capture) -->
+        <div class="bg-gradient-to-br from-pink-500 to-rose-600 text-white rounded-3xl p-6 shadow-xl mb-6 relative overflow-hidden">
+            <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-xl"></div>
+            
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <span class="bg-white/20 text-white text-[11px] font-medium px-2.5 py-1 rounded-full uppercase tracking-wider">Titipan Dana</span>
+                    <h2 class="text-xl font-bold mt-2">Tabungan Mesi</h2>
+                </div>
+                <div class="text-right">
+                    <span class="text-xs text-pink-100">Periode</span>
+                    <p class="text-sm font-semibold">11/10/2026</p>
+                </div>
+            </div>
+
+            <div class="bg-white/10 backdrop-blur-md rounded-2xl p-4 space-y-3 border border-white/15">
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-pink-100">Deposito</span>
+                    <span class="font-bold text-base">IDR 12,121,393</span>
+                </div>
+                <div class="flex justify-between items-center text-sm pb-3 border-b border-white/15">
+                    <span class="text-pink-100">Cash Available</span>
+                    <span class="font-bold text-base">IDR 7,943,500</span>
+                </div>
+                <div class="flex justify-between items-center pt-1">
+                    <span class="font-bold text-white text-sm">Total</span>
+                    <span class="font-extrabold text-xl text-yellow-300">IDR 20,064,893</span>
+                </div>
+            </div>
+
+            <div class="mt-4 text-[11px] text-pink-100 text-center flex items-center justify-center">
+                <i class="fa-solid fa-circle-check mr-1 text-yellow-300"></i> Dana tersimpan aman dan terverifikasi
+            </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 text-center">
+            <p class="text-xs text-gray-500 mb-2">Halaman ini siap untuk di-screenshot/capture kapan saja saat dibutuhkan.</p>
+            <div class="flex justify-center space-x-2">
+                <span class="inline-block w-2 h-2 rounded-full bg-pink-500"></span>
+                <span class="inline-block w-2 h-2 rounded-full bg-rose-400"></span>
+                <span class="inline-block w-2 h-2 rounded-full bg-pink-300"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isMasked = false;
+
+        function switchView(viewName) {
+            document.getElementById('homeView').classList.remove('active');
+            document.getElementById('personalView').classList.remove('active');
+            document.getElementById('mesiView').classList.remove('active');
+
+            if (viewName === 'home') {
+                document.getElementById('homeView').classList.add('active');
+            } else if (viewName === 'personal') {
+                document.getElementById('personalView').classList.add('active');
+            } else if (viewName === 'mesi') {
+                document.getElementById('mesiView').classList.add('active');
+            }
+            window.scrollTo(0, 0);
+        }
+
+        function toggleAccordion(sectionId, iconId) {
+            const content = document.getElementById(sectionId);
+            const parentCard = content.parentElement;
+            content.classList.toggle('open');
+            parentCard.classList.toggle('open');
+        }
+
+        function formatIDR(num) {
+            return "IDR " + Number(num).toLocaleString('id-ID');
+        }
+
+        function toggleMask() {
+            isMasked = !isMasked;
+            const eyeIcon = document.getElementById('eyeIcon');
+            const totalDisplay = document.getElementById('totalBalanceDisplay');
+            const amountElements = document.querySelectorAll('.amount-text');
+
+            if (isMasked) {
+                eyeIcon.classList.remove('fa-eye');
+                eyeIcon.classList.add('fa-eye-slash');
+                totalDisplay.innerText = "IDR •••••••••";
+                
+                amountElements.forEach(el => {
+                    el.innerText = "IDR •••••••";
+                });
+            } else {
+                eyeIcon.classList.remove('fa-eye-slash');
+                eyeIcon.classList.add('fa-eye');
+                totalDisplay.innerText = formatIDR(144848824);
+
+                amountElements.forEach(el => {
+                    const rawVal = el.getAttribute('data-val');
+                    if (rawVal !== null) {
+                        el.innerText = formatIDR(rawVal);
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
